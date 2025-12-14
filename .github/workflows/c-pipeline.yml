@@ -10,7 +10,7 @@ env:
   DEPLOY_API_KEY: ${{ secrets.DEPLOY_API_KEY }}
 
 jobs:
-  ci_stages:
+  build-test-deploy:
     runs-on: ubuntu-latest
     
     steps:

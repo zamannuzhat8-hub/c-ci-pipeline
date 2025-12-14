@@ -55,7 +55,7 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           
       # Use Secret and ensure masking in logs
-      - name: Log Confirmation with Masked Secret
+      - name: Simulated Deployment
         run: |
           echo "Deployment artifact successfully downloaded and unpacked."
           # Prints the API key, which GitHub Actions automatically masks.

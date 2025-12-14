@@ -1,0 +1,68 @@
+name: C CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  DEPLOY_API_KEY: ${{ secrets.DEPLOY_API_KEY }}
+
+jobs:
+  ci_stages:
+    runs-on: ubuntu-latest
+    
+    steps:
+    
+      # Stage: Source
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+      
+      # Stage: Build (Compile and Generate Artifact)
+      - name: Compile Application and Artifact
+        id: build_app
+        run: |
+          # Compile main.c to 'app' executable
+          gcc main.c -o app
+          # Compile test.c to 'test_runner' executable
+          gcc test.c -o test_runner
+          
+          # Zip executables and source files as the deployable artifact
+          zip -r build-artifact.zip app test_runner main.c test.c
+          echo "ARTIFACT_NAME=build-artifact.zip" >> $GITHUB_ENV
+          echo "Artifact created: build-artifact.zip"
+      
+      # Stage: Test (Run Unit Tests)
+      - name: Run Automated Unit Tests
+        run: |
+          # Execute the test runner. Pipeline will fail if tests do not pass.
+          ./test_runner
+          
+      # Stage: Package/Artifact (Upload Artifact)
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }} 
+          path: ${{ env.ARTIFACT_NAME }}
+          
+      # Stage: Simulated Deploy (Download Artifact and use Secret)
+      
+      # Download Artifact for Deployment (Enforces "Build Once, Deploy Many")
+      - name: Download Artifact for Deployment
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          
+      # Use Secret and ensure masking in logs
+      - name: Log Confirmation with Masked Secret
+        run: |
+          echo "Deployment artifact successfully downloaded and unpacked."
+          # Prints the API key, which GitHub Actions automatically masks.
+          echo "Deployment using API Key: ${{ env.DEPLOY_API_KEY }}" 
+          
+      # Verify Artifact Content and run the app
+      - name: Verify Artifact Content
+        run: |
+          unzip build-artifact.zip
+          ./app

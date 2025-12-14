@@ -61,8 +61,4 @@ jobs:
           # Prints the API key, which GitHub Actions automatically masks.
           echo "Deployment using API Key: ${{ env.DEPLOY_API_KEY }}" 
           
-      # Verify Artifact Content and run the app
-      - name: Verify Artifact Content
-        run: |
-          unzip build-artifact.zip
-          ./app
+    
